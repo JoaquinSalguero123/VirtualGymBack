@@ -1,0 +1,241 @@
+﻿### =====================================================================
+###  VirtualGymAssistant - Peticiones de prueba
+###
+###  Se ejecutan desde Visual Studio o VS Code con la extension REST Client.
+###  Empezar SIEMPRE por el login: guarda el token en la variable {{token}}
+###  y el resto de las peticiones lo reutilizan.
+### =====================================================================
+
+@host = http://localhost:5180
+@sucursal = 1
+
+### Verificar que la API este levantada
+GET {{host}}/api/health
+
+### Sucursales disponibles (publico, sin token) - lo usa el formulario de registro
+GET {{host}}/api/sucursales/publicas
+
+### ---------------------------------------------------------------------
+### LOGIN. Ejecutar esta peticion primero: de aca sale el token.
+### ---------------------------------------------------------------------
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@vga.com",
+  "contrasena": "admin"
+}
+
+@token = {{login.response.body.token}}
+
+### Sesion del usuario autenticado (sucursales y roles actualizados)
+GET {{host}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Registrar un socio nuevo en una sucursal
+### NO devuelve token: la cuenta queda sin acceso hasta confirmar el codigo que llega por mail.
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Perez",
+  "email": "juan.perez@ejemplo.com",
+  "telefono": "3511234567",
+  "contrasena": "123456",
+  "idGimnasio": 1
+}
+
+### Confirmar el email con el codigo de 6 digitos. Devuelve la sesion (con el token),
+### asi que es el paso que "entra" despues de registrarse.
+POST {{host}}/api/auth/verificar-email
+Content-Type: application/json
+
+{
+  "email": "juan.perez@ejemplo.com",
+  "codigo": "123456"
+}
+
+### Reenviar el codigo si no llego o ya vencio (dura 30 minutos)
+POST {{host}}/api/auth/reenviar-verificacion
+Content-Type: application/json
+
+{
+  "email": "juan.perez@ejemplo.com"
+}
+
+### ---------------------------------------------------------------------
+### SUCURSALES
+### ---------------------------------------------------------------------
+
+### Sucursales visibles para el usuario
+GET {{host}}/api/sucursales
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Registrar una sucursal (solo el duenio de la organizacion)
+POST {{host}}/api/sucursales
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Oeste",
+  "direccion": "Av. Duarte Quiros 3400, Cordoba",
+  "telefono": "351-4333333",
+  "email": "oeste@vga.com"
+}
+
+### ---------------------------------------------------------------------
+### PERSONAL
+### ---------------------------------------------------------------------
+
+### Catalogo de roles
+GET {{host}}/api/usuarios/roles
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Personal de la sucursal activa
+GET {{host}}/api/usuarios?pagina=1&tamanioPagina=20
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Dar de alta un recepcionista (idRol 3 = Recepcionista)
+POST {{host}}/api/usuarios
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Mariana",
+  "apellido": "Lopez",
+  "email": "mariana.lopez@vga.com",
+  "contrasena": "123456",
+  "idRol": 3
+}
+
+### ---------------------------------------------------------------------
+### SOCIOS
+### ---------------------------------------------------------------------
+
+### Padron de socios con filtros
+GET {{host}}/api/socios?soloActivos=true&pagina=1&tamanioPagina=20
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Ficha del socio autenticado
+GET {{host}}/api/socios/mi-ficha
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### ---------------------------------------------------------------------
+### PLANES Y PAGOS
+### ---------------------------------------------------------------------
+
+### Planes de la organizacion
+GET {{host}}/api/planes
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Formas de pago vigentes
+GET {{host}}/api/formas-de-pago
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### El socio carga el pago de su cuota (queda Pendiente)
+POST {{host}}/api/pagos
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "mes": 12,
+  "anio": 2026,
+  "idPlan": 1,
+  "idFormaPago": 1,
+  "comprobante": "MP-000123"
+}
+
+### Bandeja de pagos pendientes de aprobacion
+GET {{host}}/api/pagos/pendientes
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Aprobar un pago (cambiar el 1 por el id real)
+PUT {{host}}/api/pagos/1/estado
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "estado": "Pagado"
+}
+
+### Grilla anual de cuotas
+GET {{host}}/api/pagos/grilla-anual?anio=2026
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Metricas de cobranza de la sucursal
+GET {{host}}/api/pagos/resumen
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### ---------------------------------------------------------------------
+### ASISTENCIAS
+### ---------------------------------------------------------------------
+
+### El socio marca su ingreso
+POST {{host}}/api/asistencias/marcar
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### Grilla mensual de asistencias
+GET {{host}}/api/asistencias/grilla-mensual
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+
+### ---------------------------------------------------------------------
+### RUTINAS Y DIETAS
+### ---------------------------------------------------------------------
+
+### Generar una propuesta de rutina (no la guarda)
+POST {{host}}/api/rutinas-de-socio/generar
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "diasPorSemana": 3,
+  "ejerciciosPorDia": 5
+}
+
+### Guardar la rutina del socio
+POST {{host}}/api/rutinas-de-socio/mia
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "nombre": "Full Body 3 dias",
+  "dias": [
+    {
+      "dia": 1,
+      "ejercicios": [
+        { "idEjercicio": 1, "series": 3, "repeticiones": "8-10", "descansoSeg": 120 },
+        { "idEjercicio": 9, "series": 3, "repeticiones": "8-10", "descansoSeg": 120 }
+      ]
+    }
+  ]
+}
+
+### Generar una propuesta de dieta semanal
+POST {{host}}/api/dietas/generar
+Authorization: Bearer {{token}}
+X-Gimnasio-Id: {{sucursal}}
+Content-Type: application/json
+
+{
+  "dias": 7
+}

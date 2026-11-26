@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Genera el .xml con los comentarios del código para que Swagger los muestre. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- 1591: "falta comentario XML". No documentamos cada miembro, sólo lo relevante. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>6464773e-6590-42b8-858b-8240a4d9b54a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VirtualGymAssistant.Infrastructure\VirtualGymAssistant.Infrastructure.csproj" />
+    <ProjectReference Include="..\VirtualGymAssistant.Application\VirtualGymAssistant.Application.csproj" />
+  </ItemGroup>
+
+</Project>

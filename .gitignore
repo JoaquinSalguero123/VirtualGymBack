@@ -1,0 +1,22 @@
+# Compilación
+bin/
+obj/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# Archivos subidos en tiempo de ejecución (carrusel y adjuntos del foro)
+Uploads/
+
+# Secretos locales
+*.pfx
+appsettings.*.local.json
+secrets.json
+
+# Resultados de pruebas y logs
+TestResults/
+*.log

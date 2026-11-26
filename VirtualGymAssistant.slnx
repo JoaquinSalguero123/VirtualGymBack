@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/VirtualGymAssistant.API/VirtualGymAssistant.API.csproj" />
+  <Project Path="src/VirtualGymAssistant.Application/VirtualGymAssistant.Application.csproj" />
+  <Project Path="src/VirtualGymAssistant.Domain/VirtualGymAssistant.Domain.csproj" />
+  <Project Path="src/VirtualGymAssistant.Infrastructure/VirtualGymAssistant.Infrastructure.csproj" />
+</Solution>
